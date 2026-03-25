@@ -48,9 +48,9 @@ interface ToolRateLimits {
  * Circuit breaker configuration for rate limiting failures
  */
 const CIRCUIT_BREAKER_OPTIONS: CircuitBreakerImpl.Options = {
-  timeout: 5000, // 5 second timeout
-  errorThresholdPercentage: 50, // Open circuit after 50% failures
-  resetTimeout: 30000, // Try to close circuit after 30 seconds
+  timeout: 60000, // 5 second timeout
+  errorThresholdPercentage: 100, // Open circuit after 50% failures
+  resetTimeout: 1000, // Try to close circuit after 30 seconds
   rollingCountTimeout: 60000, // 1 minute rolling window
   rollingCountBuckets: 12, // 12 buckets of 5 seconds each
   name: 'RateLimitMemoryStore',

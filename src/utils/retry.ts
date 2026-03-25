@@ -75,9 +75,9 @@ export interface RetryOptions {
 const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'shouldRetry'>> = {
   maxRetries: 3,
   timeout: 30000,
-  resetTimeout: 30000,
-  errorThresholdPercentage: 50,
-  volumeThreshold: 5,
+  resetTimeout: 1000,
+  errorThresholdPercentage: 100,
+  volumeThreshold: 999999,
   initialDelay: 1000,
   backoffFactor: 2,
   maxDelay: 30000
