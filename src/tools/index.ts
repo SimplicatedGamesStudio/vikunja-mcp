@@ -33,6 +33,7 @@ import { registerTemplatesTool } from './templates';
 import { registerWebhooksTool } from './webhooks';
 import { registerBatchImportTool } from './batch-import';
 import { registerExportTool } from './export';
+import { registerKanbanTool } from './kanban';
 
 // Re-export for testing
 export {
@@ -54,6 +55,7 @@ export {
   registerWebhooksTool,
   registerBatchImportTool,
   registerExportTool,
+  registerKanbanTool,
 };
 
 export function registerTools(
@@ -94,6 +96,9 @@ export function registerTools(
 
     // Register batch import tool
     registerBatchImportTool(server, authManager, clientFactory);
+
+    // Register kanban board tool
+    registerKanbanTool(server, authManager, clientFactory);
 
     // Register user and export tools conditionally (preserving backward compatibility)
     // NOTE: The permission infrastructure is available for future migration

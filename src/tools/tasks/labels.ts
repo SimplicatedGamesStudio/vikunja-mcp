@@ -37,30 +37,12 @@ export async function applyLabels(args: {
     const taskId = args.id;
     const labelIds = args.labels;
 
-    // Add labels to the task with retry logic
+    // Add labels to the task — direct calls without circuit breaker
     for (const labelId of labelIds) {
-      try {
-        await withRetry(
-          () =>
-            client.tasks.addLabelToTask(taskId, {
-              task_id: taskId,
-              label_id: labelId,
-            }),
-          {
-            ...RETRY_CONFIG.AUTH_ERRORS,
-            shouldRetry: (error: unknown) => isAuthenticationError(error),
-          },
-        );
-      } catch (labelError) {
-        // Check if it's an auth error after retries
-        if (isAuthenticationError(labelError)) {
-          throw new MCPError(
-            ErrorCode.API_ERROR,
-            `Failed to apply label to task (Retried ${RETRY_CONFIG.AUTH_ERRORS.maxRetries} times)`,
-          );
-        }
-        throw labelError;
-      }
+      await client.tasks.addLabelToTask(taskId, {
+        task_id: taskId,
+        label_id: labelId,
+      });
     }
 
     // Fetch the updated task to show current labels
