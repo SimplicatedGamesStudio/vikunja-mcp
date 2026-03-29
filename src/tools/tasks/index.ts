@@ -59,14 +59,25 @@ async function listTasks(
       }
     }
 
-    const taskCount = filteringResult.tasks?.length || 0;
+    const tasks = filteringResult.tasks || [];
+    const taskCount = tasks.length;
+
+    // Build pagination info so the caller knows results may be paged
+    const page = args.page || 1;
+    const perPage = args.perPage || 1000;
+    const paginationNote = taskCount >= perPage
+      ? `⚠️ Results may be truncated (returned ${taskCount}, limit ${perPage}). Use page/perPage to paginate.`
+      : '';
+
     const response = createTaskResponse(
       'list-tasks',
-      `Found ${taskCount} tasks${filteringMessage}`,
-      { tasks: filteringResult.tasks || [] },
+      `Found ${taskCount} tasks${filteringMessage}${paginationNote ? `\n\n${paginationNote}` : ''}`,
+      { tasks },
       {
         timestamp: new Date().toISOString(),
         count: taskCount,
+        page,
+        perPage,
         ...(filteringResult.metadata || {}),
       },
       undefined, // verbosity (ignored - using standard AORP)

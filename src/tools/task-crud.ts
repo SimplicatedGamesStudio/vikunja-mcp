@@ -57,12 +57,21 @@ async function listTasks(
     // Type the filtering metadata properly
     const filteringMetadata = metadata;
 
+    // Build pagination info so the caller knows results may be paged
+    const page = args.page || 1;
+    const perPage = args.perPage || 1000;
+    const paginationNote = tasks.length >= perPage
+      ? `\n\n⚠️ Results may be truncated (returned ${tasks.length}, limit ${perPage}). Use page/perPage to paginate.`
+      : '';
+
     const response = createSuccessResponse(
       'list-tasks',
-      `Found ${tasks.length} tasks${filteringMessage}`,
+      `Found ${tasks.length} tasks${filteringMessage}${paginationNote}`,
       { tasks: tasks as Task[] }, // Convert from node-vikunja Task to our Task interface
       {
         count: tasks.length,
+        page,
+        perPage,
         filteringMethod: filteringMetadata.serverSideFilteringUsed ? 'server-side' :
                            filteringMetadata.serverSideFilteringAttempted ? 'client-side-fallback' : 'client-side',
         ...metadata,

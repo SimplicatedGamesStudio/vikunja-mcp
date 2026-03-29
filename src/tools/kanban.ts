@@ -117,10 +117,43 @@ async function listViewTasks(
   bucketTitle?: string,
   bucketId?: number,
 ): Promise<McpResponse> {
-  const data = await vikunjaFetch<ViewTaskBucket[]>(
-    authManager,
-    `/projects/${projectId}/views/${viewId}/tasks?per_page=200`
-  );
+  // Vikunja API caps per_page at 50 regardless of what we request.
+  // Paginate through all pages and merge bucket task arrays.
+  const allBucketsMap = new Map<number, ViewTaskBucket>();
+  let page = 1;
+  const perPage = 50;
+
+  while (true) {
+    const data = await vikunjaFetch<ViewTaskBucket[]>(
+      authManager,
+      `/projects/${projectId}/views/${viewId}/tasks?per_page=${perPage}&page=${page}`
+    );
+
+    let newTasksFound = false;
+    for (const bucket of data) {
+      const existing = allBucketsMap.get(bucket.id);
+      if (existing) {
+        if (bucket.tasks && bucket.tasks.length > 0) {
+          existing.tasks = [...(existing.tasks || []), ...bucket.tasks];
+          newTasksFound = true;
+        }
+      } else {
+        allBucketsMap.set(bucket.id, { ...bucket, tasks: bucket.tasks || [] });
+        if (bucket.tasks && bucket.tasks.length > 0) {
+          newTasksFound = true;
+        }
+      }
+    }
+
+    // Stop when no page returned new tasks (all buckets empty on this page)
+    if (!newTasksFound || data.length === 0) break;
+    page++;
+
+    // Safety cap to avoid infinite loops
+    if (page > 20) break;
+  }
+
+  const data = Array.from(allBucketsMap.values());
 
   // Filter to requested bucket if specified
   let buckets = data.sort((a, b) => a.position - b.position);
